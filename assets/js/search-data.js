@@ -71,8 +71,8 @@ ninja.data = [{
           window.open("https://scholar.google.com/citations?user=kmLgZRQAAAAJ", "_blank");
         },
       },{
-        id: 'social-pi_website',
-        title: 'Pi_website',
+        id: 'social-About the PI',
+        title: 'About the pi',
         section: 'Socials',
         handler: () => {
           window.open("https://yinsight.github.io/", "_blank");
