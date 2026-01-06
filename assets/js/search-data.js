@@ -50,11 +50,11 @@ ninja.data = [{
           section: "Projects",handler: () => {
               window.location.href = "/projects/3_project/";
             },},{
-        id: 'social-email',
-        title: 'email',
+        id: 'social-Email',
+        title: 'Email',
         section: 'Socials',
         handler: () => {
-          window.open("mailto:%79%79%69%6E@%65%6D%69%63%68.%65%64%75", "_blank");
+          window.open("", "_blank");
         },
       },{
         id: 'social-linkedin',
@@ -71,8 +71,8 @@ ninja.data = [{
           window.open("https://scholar.google.com/citations?user=kmLgZRQAAAAJ", "_blank");
         },
       },{
-        id: 'social-PI website',
-        title: 'Pi website',
+        id: 'social-Personal page',
+        title: 'Personal page',
         section: 'Socials',
         handler: () => {
           window.open("https://yinsight.github.io/", "_blank");
