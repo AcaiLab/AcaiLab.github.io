@@ -2,7 +2,7 @@
 layout: page
 permalink: /publications/
 title: publications
-description: What We've Published
+description: What we have published 🎉
 nav: true
 nav_order: 1
 ---
