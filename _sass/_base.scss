@@ -594,6 +594,30 @@ footer.sticky-bottom {
   }
 }
 
+.about-home {
+  .post-title {
+    color: $purple-color;
+    font-weight: 700;
+  }
+
+  .lab-highlight {
+    color: $purple-color;
+    font-weight: 600;
+  }
+
+  .profile.float-right {
+    margin-top: -4.25rem;
+  }
+}
+
+@media (max-width: 575px) {
+  .about-home {
+    .profile.float-right {
+      margin-top: 0;
+    }
+  }
+}
+
 .post-list {
   margin: 0;
   margin-bottom: 40px;
