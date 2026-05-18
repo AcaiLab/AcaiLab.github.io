@@ -36,17 +36,17 @@ ninja.data = [{
           description: "",
           section: "News",},{id: "projects-infant-project",
           title: 'Infant Project',
-          description: "with background image",
+          description: "More details coming soon.",
           section: "Projects",handler: () => {
               window.location.href = "/projects/1_project/";
             },},{id: "projects-depression-project",
           title: 'Depression Project',
-          description: "with background image",
+          description: "More details coming soon.",
           section: "Projects",handler: () => {
               window.location.href = "/projects/2_project/";
             },},{id: "projects-soccer-project",
           title: 'Soccer Project',
-          description: "with background image",
+          description: "More details coming soon.",
           section: "Projects",handler: () => {
               window.location.href = "/projects/3_project/";
             },},{
