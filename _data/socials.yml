@@ -10,7 +10,7 @@
 # bluesky_url: # your bluesky URL
 # dblp_url: # your DBLP profile url
 # discord_id: # your discord id (18-digit unique numerical identifier)
-Email: yyin@emich.edu # your email address
+email: yyin@emich.edu # your email address
 # facebook_id: # your facebook id
 # flickr_id: # your flickr id
 # github_username: # your GitHub user name
@@ -27,12 +27,12 @@ Email: yyin@emich.edu # your email address
 linkedin_username: yunting-yin # your LinkedIn user name
 # mastodon_username: # your mastodon instance+username in the format instance.tld/@username
 # medium_username: # your Medium username
-# orcid_id: # your ORCID ID
+orcid_id: 0009-0004-3150-1411 # your ORCID ID
 # osf_id: # your OSF ID
 # pinterest_id: # your pinterest id
 # publons_id: # your ID on Publons
 # quora_username: # your Quora username
-# research_gate_profile: # your profile on ResearchGate
+research_gate_profile: https://www.researchgate.net/profile/Yunting-Yin # your profile on ResearchGate
 # rss_icon: true # comment this line to hide the RSS icon
 scholar_userid: kmLgZRQAAAAJ # your Google Scholar ID
 # scopus_id: # your profile on Scopus
