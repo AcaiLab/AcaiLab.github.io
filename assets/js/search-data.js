@@ -50,11 +50,11 @@ ninja.data = [{
           section: "Projects",handler: () => {
               window.location.href = "/projects/3_project/";
             },},{
-        id: 'social-Email',
-        title: 'Email',
+        id: 'social-email',
+        title: 'email',
         section: 'Socials',
         handler: () => {
-          window.open("", "_blank");
+          window.open("mailto:%79%79%69%6E@%65%6D%69%63%68.%65%64%75", "_blank");
         },
       },{
         id: 'social-linkedin',
@@ -62,6 +62,20 @@ ninja.data = [{
         section: 'Socials',
         handler: () => {
           window.open("https://www.linkedin.com/in/yunting-yin", "_blank");
+        },
+      },{
+        id: 'social-orcid',
+        title: 'ORCID',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://orcid.org/0009-0004-3150-1411", "_blank");
+        },
+      },{
+        id: 'social-researchgate',
+        title: 'ResearchGate',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://www.researchgate.net/profile/https://www.researchgate.net/profile/Yunting-Yin/", "_blank");
         },
       },{
         id: 'social-scholar',
