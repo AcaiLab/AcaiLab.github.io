@@ -6,7 +6,7 @@ subtitle: Applied Computing and Artificial Intelligence Lab @ Eastern Michigan U
 
 profile:
   align: right
-  image: Yunting_2025.JPG
+  image: Yunting_2025.jpg
   image_circular: false # crops the image to make it circular
   more_info: >
 
