@@ -1,6 +1,6 @@
 ---
 layout: about
-permalink: /
+permalink: /info/
 subtitle: Applied Computing and Artificial Intelligence Lab @ Eastern Michigan University
 
 selected_papers: true # includes a list of papers marked as "selected={true}"
