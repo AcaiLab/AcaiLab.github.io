@@ -2,7 +2,7 @@
 layout: page
 title: active Projects
 permalink: /projects/
-description: What We're Working On
+description: What we are working on 😎
 nav: true
 nav_order: 2
 display_categories: [work, fun]
