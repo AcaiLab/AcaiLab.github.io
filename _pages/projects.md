@@ -1,6 +1,6 @@
 ---
 layout: page
-title: active Projects
+title: active projects
 permalink: /projects/
 description: What we are working on 😎
 nav: true
