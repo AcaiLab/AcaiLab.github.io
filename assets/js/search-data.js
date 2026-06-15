@@ -49,6 +49,11 @@ ninja.data = [{
           description: "More details coming soon.",
           section: "Projects",handler: () => {
               window.location.href = "/projects/3_project/";
+            },},{id: "projects-bird-project",
+          title: 'Bird Project',
+          description: "More details coming soon.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/4_project/";
             },},{
         id: 'social-email',
         title: 'email',
