@@ -1,8 +1,8 @@
 ---
 layout: page
-title: Soccer Project
+title: Authorship Project
 description: More details coming soon.
-img: assets/img/project-soccer-pixel.png
-importance: 1
+img: assets/img/project-authorship-pixel.png
+importance: 2
 category: under development
 ---
