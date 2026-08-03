@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NCLEX Buddy</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="avatar-panel" aria-label="Nursing educator avatar">
+        <div class="topbar">
+          <div>
+            <p class="eyebrow">NCLEX Buddy</p>
+            <h1>Clinical judgment practice</h1>
+          </div>
+          <div class="avatar-tools">
+            <div class="status" id="video-status">Video loading</div>
+            <button type="button" id="replay-welcome-btn" class="video-tool">
+              <i data-lucide="rotate-ccw"></i>
+              Replay welcome
+            </button>
+          </div>
+        </div>
+        <div class="video-stage">
+          <iframe
+            id="liveavatar-frame"
+            class="liveavatar-frame"
+            allow="microphone; camera; autoplay; encrypted-media"
+            title="LiveAvatar nurse educator"
+            hidden
+          ></iframe>
+          <video
+            id="welcome-video"
+            class="welcome-video"
+            src="videos/welcome-nclex-buddy.mp4"
+            autoplay
+            playsinline
+            preload="auto"
+          ></video>
+          <div id="video-missing" class="video-missing" hidden>
+            <strong>Welcome video needed</strong>
+            <span>Export the HeyGen clip as <code>static/videos/welcome-nclex-buddy.mp4</code>.</span>
+          </div>
+        </div>
+        <div class="educator-line" id="educator-line">Welcome to NCLEX Buddy.</div>
+      </section>
+
+      <section class="practice-panel" aria-label="Practice questions">
+        <div class="controls-row">
+          <div>
+            <span id="progress">Question 1 of 3</span>
+            <strong id="category">Prioritization</strong>
+          </div>
+          <div class="mode-toggle" role="group" aria-label="Question navigation">
+            <button type="button" id="shuffle-btn" title="Shuffle questions" aria-label="Shuffle questions">
+              <i data-lucide="shuffle"></i>
+            </button>
+            <button type="button" id="repeat-btn" title="Repeat educator prompt" aria-label="Repeat educator prompt">
+              <i data-lucide="volume-2"></i>
+            </button>
+          </div>
+        </div>
+
+        <article class="question-card">
+          <div class="question-meta">
+            <span id="difficulty">Foundational</span>
+            <span id="format">Single best answer</span>
+          </div>
+          <h2 id="prompt">Loading question...</h2>
+          <div id="options" class="options"></div>
+        </article>
+
+        <div id="feedback" class="feedback" hidden></div>
+
+        <div class="voice-answer" id="voice-answer">
+          <button type="button" id="mic-btn" class="mic-button" aria-pressed="false" title="Answer by voice" aria-label="Answer by voice">
+            <i data-lucide="mic"></i>
+          </button>
+          <div>
+            <strong id="mic-status">Voice answer</strong>
+            <p id="voice-transcript">Tap the microphone, say an answer like “I choose option A,” then tap it again.</p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" id="check-btn" class="primary">
+            <i data-lucide="check"></i>
+            Check answer
+          </button>
+          <button type="button" id="next-btn" class="secondary">
+            <i data-lucide="arrow-right"></i>
+            Next
+          </button>
+        </div>
+
+        <details class="sources">
+          <summary>Study references</summary>
+          <ul id="sources"></ul>
+        </details>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script type="module" src="app.js?v=github-pages-demo"></script>
+  </body>
+</html>
