@@ -266,10 +266,116 @@ h2 {
   height: 19px;
 }
 
-.question-card {
+.question-card,
+.results-panel {
   border: 1px solid var(--line);
   background: var(--panel);
   padding: 24px;
+}
+
+.results-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.results-panel[hidden] {
+  display: none;
+}
+
+.question-card[hidden],
+.feedback[hidden],
+.voice-answer[hidden],
+.actions[hidden] {
+  display: none;
+}
+
+.score-hero {
+  display: grid;
+  gap: 8px;
+  padding: 22px;
+  border: 1px solid rgba(29, 111, 95, 0.24);
+  background: #f1faf7;
+}
+
+.score-hero span {
+  color: var(--green-dark);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.score-hero strong {
+  color: var(--green-dark);
+  font-size: clamp(2.2rem, 8vw, 4.4rem);
+  line-height: 0.98;
+}
+
+.score-hero p {
+  margin: 0;
+  color: #24364d;
+  line-height: 1.45;
+}
+
+.result-summary {
+  display: grid;
+  gap: 10px;
+}
+
+.result-item {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: #fbfcfd;
+}
+
+.result-item.correct {
+  border-color: rgba(29, 111, 95, 0.55);
+  background: #f2faf7;
+}
+
+.result-item.incorrect {
+  border-color: rgba(182, 77, 67, 0.55);
+  background: #fff5f3;
+}
+
+.result-item strong {
+  color: var(--ink);
+}
+
+.result-prompt {
+  margin: 0;
+  color: #223044;
+  font-weight: 700;
+  line-height: 1.42;
+}
+
+.result-item span {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.result-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.result-actions button {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 18px;
+  font-weight: 800;
+}
+
+.result-actions svg {
+  width: 19px;
+  height: 19px;
 }
 
 .question-meta {
@@ -312,6 +418,10 @@ h2 {
 .option input {
   margin-top: 2px;
   accent-color: var(--green);
+}
+
+.option:has(input:disabled) {
+  cursor: default;
 }
 
 .option.correct {
@@ -412,6 +522,11 @@ h2 {
 .secondary {
   background: #edf3f7;
   color: #24364d;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
 }
 
 .sources {

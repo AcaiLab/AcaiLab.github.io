@@ -1,5 +1,11 @@
 const welcomeVideo = document.getElementById("welcome-video");
 const WELCOME_VIDEO_SRC = appUrl("videos/welcome-nclex-buddy.mp4");
+const SCORE_VIDEO_SRC = appUrl("videos/score-summary.mp4");
+const SCORE_SUMMARY_TEXT =
+  "Here is your score. Take a moment to review, then keep practicing. Each question helps sharpen your clinical judgment.";
+const VOICE_NO_MATCH_VIDEO_SRC = appUrl("videos/voice-no-match.mp4");
+const VOICE_NO_MATCH_TEXT =
+  "I heard your response, but I could not match it to an answer option. Try saying option A, B, C, or D.";
 const liveAvatarFrame = document.getElementById("liveavatar-frame");
 const videoStatus = document.getElementById("video-status");
 const videoMissing = document.getElementById("video-missing");
@@ -7,16 +13,25 @@ const replayWelcomeButton = document.getElementById("replay-welcome-btn");
 const educatorLine = document.getElementById("educator-line");
 const progressNode = document.getElementById("progress");
 const categoryNode = document.getElementById("category");
+const questionCard = document.getElementById("question-card");
 const difficultyNode = document.getElementById("difficulty");
 const formatNode = document.getElementById("format");
 const promptNode = document.getElementById("prompt");
 const optionsNode = document.getElementById("options");
 const feedbackNode = document.getElementById("feedback");
+const resultsPanel = document.getElementById("results-panel");
+const scoreValue = document.getElementById("score-value");
+const scoreNote = document.getElementById("score-note");
+const resultSummary = document.getElementById("result-summary");
+const actionsNode = document.getElementById("actions");
 const checkButton = document.getElementById("check-btn");
 const nextButton = document.getElementById("next-btn");
+const nextButtonLabel = document.getElementById("next-btn-label");
+const restartQuizButton = document.getElementById("restart-quiz-btn");
 const shuffleButton = document.getElementById("shuffle-btn");
 const repeatButton = document.getElementById("repeat-btn");
 const micButton = document.getElementById("mic-btn");
+const voiceAnswer = document.getElementById("voice-answer");
 const micStatus = document.getElementById("mic-status");
 const voiceTranscript = document.getElementById("voice-transcript");
 const sourcesNode = document.getElementById("sources");
@@ -27,6 +42,8 @@ const state = {
   index: 0,
   lastPrompt: "Welcome to NCLEX Buddy.",
   checked: false,
+  responses: {},
+  showingResults: false,
   welcomeVideoAvailable: true,
   recognition: null,
   isListening: false,
@@ -152,6 +169,15 @@ function markWelcomeVideoMissing() {
   educatorLine.textContent = "Export the HeyGen welcome clip as static/videos/welcome-nclex-buddy.mp4.";
 }
 
+async function videoExists(videoSrc) {
+  try {
+    const response = await fetch(videoSrc, { method: "HEAD" });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 async function autoplayWelcomeVideo() {
   try {
     welcomeVideo.muted = false;
@@ -222,7 +248,17 @@ function renderSources() {
 
 function renderQuestion({ announce = true } = {}) {
   const question = currentQuestion();
+  state.showingResults = false;
   state.checked = false;
+  questionCard.hidden = false;
+  resultsPanel.hidden = true;
+  voiceAnswer.hidden = false;
+  actionsNode.hidden = false;
+  checkButton.hidden = false;
+  checkButton.disabled = false;
+  nextButton.hidden = false;
+  nextButton.disabled = true;
+  nextButtonLabel.textContent = state.index === state.questions.length - 1 ? "View score" : "Next";
   feedbackNode.hidden = true;
   feedbackNode.className = "feedback";
   progressNode.textContent = `Question ${state.index + 1} of ${state.questions.length}`;
@@ -243,6 +279,11 @@ function renderQuestion({ announce = true } = {}) {
     input.name = question.id;
     input.type = question.format === "multiple" ? "checkbox" : "radio";
     input.value = String(optionIndex);
+    input.addEventListener("change", () => {
+      if (!state.checked) {
+        feedbackNode.hidden = true;
+      }
+    });
 
     const text = document.createElement("span");
     text.textContent = option;
@@ -269,6 +310,10 @@ function selectedIndexes() {
 }
 
 async function checkAnswer() {
+  if (state.checked || state.showingResults) {
+    return;
+  }
+
   const question = currentQuestion();
   const selected = selectedIndexes();
   if (!selected.length) {
@@ -284,6 +329,15 @@ async function checkAnswer() {
         body: JSON.stringify({ questionId: question.id, selected })
       });
   state.checked = true;
+  state.responses[question.id] = {
+    correct: Boolean(result.correct),
+    selected,
+    answer: result.answer,
+    category: question.category,
+    prompt: question.prompt
+  };
+  checkButton.disabled = true;
+  nextButton.disabled = false;
   markOptions(result, selected);
   feedbackNode.hidden = false;
   feedbackNode.classList.toggle("is-wrong", !result.correct);
@@ -317,19 +371,138 @@ function markOptions(result, selected) {
   optionsNode.querySelectorAll(".option").forEach((label, index) => {
     label.classList.toggle("correct", correct.has(index));
     label.classList.toggle("incorrect", selected.includes(index) && !correct.has(index));
+    label.querySelector("input").disabled = true;
   });
 }
 
 function nextQuestion() {
-  state.index = (state.index + 1) % state.questions.length;
+  if (!state.checked) {
+    speak("Check your answer first, then you can move forward.");
+    return;
+  }
+  if (state.index === state.questions.length - 1) {
+    showResults();
+    return;
+  }
+  state.index += 1;
   renderQuestion();
 }
 
 function shuffleQuestions() {
+  state.responses = {};
+  state.showingResults = false;
   for (let index = state.questions.length - 1; index > 0; index -= 1) {
     const swapIndex = Math.floor(Math.random() * (index + 1));
     [state.questions[index], state.questions[swapIndex]] = [state.questions[swapIndex], state.questions[index]];
   }
+  state.index = 0;
+  renderQuestion();
+}
+
+function showResults() {
+  state.showingResults = true;
+  if (state.isListening) {
+    state.shouldProcessVoice = false;
+    state.recognition.stop();
+  }
+
+  const total = state.questions.length;
+  const correct = state.questions.filter((question) => state.responses[question.id]?.correct).length;
+  const percent = total ? Math.round((correct / total) * 100) : 0;
+  const note = scoreMessage(correct, total);
+
+  progressNode.textContent = "Quiz complete";
+  categoryNode.textContent = "Score report";
+  questionCard.hidden = true;
+  feedbackNode.hidden = true;
+  voiceAnswer.hidden = true;
+  actionsNode.hidden = true;
+  resultsPanel.hidden = false;
+  scoreValue.textContent = `${correct} / ${total}`;
+  scoreNote.textContent = `${percent}% correct. ${note}`;
+  renderResultSummary();
+  playScoreSummary();
+}
+
+async function playScoreSummary() {
+  state.lastPrompt = SCORE_SUMMARY_TEXT;
+  educatorLine.textContent = SCORE_SUMMARY_TEXT;
+  if (await videoExists(SCORE_VIDEO_SRC)) {
+    state.lastVideoSrc = SCORE_VIDEO_SRC;
+    playEducatorVideo(SCORE_VIDEO_SRC, SCORE_SUMMARY_TEXT);
+    return;
+  }
+  state.lastVideoSrc = "";
+  playEducatorSpeech(SCORE_SUMMARY_TEXT);
+}
+
+async function playVoiceNoMatchPrompt() {
+  state.lastPrompt = VOICE_NO_MATCH_TEXT;
+  educatorLine.textContent = VOICE_NO_MATCH_TEXT;
+  if (await videoExists(VOICE_NO_MATCH_VIDEO_SRC)) {
+    state.lastVideoSrc = VOICE_NO_MATCH_VIDEO_SRC;
+    playEducatorVideo(VOICE_NO_MATCH_VIDEO_SRC, VOICE_NO_MATCH_TEXT);
+    return;
+  }
+  state.lastVideoSrc = "";
+  playEducatorSpeech(VOICE_NO_MATCH_TEXT);
+}
+
+function scoreMessage(correct, total) {
+  if (!total) {
+    return "No questions were loaded for this session.";
+  }
+  if (correct === total) {
+    return "Excellent work. You answered every question correctly.";
+  }
+  if (correct / total >= 0.67) {
+    return "Good progress. Review the missed rationales and try once more.";
+  }
+  return "Keep practicing. Review each teaching point, then try the set again.";
+}
+
+function renderResultSummary() {
+  resultSummary.innerHTML = "";
+  state.questions.forEach((question, index) => {
+    const response = state.responses[question.id] || {
+      correct: false,
+      selected: [],
+      answer: question.answer || []
+    };
+    const item = document.createElement("div");
+    item.className = `result-item ${response.correct ? "correct" : "incorrect"}`;
+
+    const heading = document.createElement("strong");
+    heading.textContent = `Question ${index + 1}: ${response.correct ? "Correct" : "Review"}`;
+
+    const category = document.createElement("span");
+    category.textContent = question.category;
+
+    const prompt = document.createElement("p");
+    prompt.className = "result-prompt";
+    prompt.textContent = question.prompt;
+
+    const selected = document.createElement("span");
+    selected.textContent = `Your answer: ${formatAnswer(response.selected, question) || "No answer recorded"}`;
+
+    const answer = document.createElement("span");
+    answer.textContent = `Correct answer: ${formatAnswer(response.answer, question)}`;
+
+    item.append(heading, category, prompt, selected, answer);
+    resultSummary.append(item);
+  });
+}
+
+function formatAnswer(indexes, question) {
+  return [...(indexes || [])]
+    .sort((a, b) => a - b)
+    .filter((index) => Number.isInteger(index) && question.options[index])
+    .map((index) => `${String.fromCharCode(65 + index)}. ${question.options[index]}`)
+    .join(" | ");
+}
+
+function restartQuiz() {
+  state.responses = {};
   state.index = 0;
   renderQuestion();
 }
@@ -392,7 +565,7 @@ function setupSpeechRecognition() {
 }
 
 function toggleVoiceInput() {
-  if (!state.recognition) {
+  if (!state.recognition || state.showingResults) {
     return;
   }
   if (state.isListening) {
@@ -402,6 +575,8 @@ function toggleVoiceInput() {
     return;
   }
 
+  stopCurrentSpeech();
+  stopEducatorVideo("Listening");
   state.finalTranscript = "";
   state.shouldProcessVoice = false;
   feedbackNode.hidden = true;
@@ -427,7 +602,7 @@ async function processVoiceAnswer() {
 
   if (!parsed.indexes.length) {
     micStatus.textContent = "Could not match answer";
-    speak("I heard your response, but I could not match it to an answer option. Try saying option A, B, C, or D.");
+    playVoiceNoMatchPrompt();
     return;
   }
 
@@ -666,9 +841,11 @@ async function playEducatorSpeech(text) {
   const requestId = state.speechRequestId + 1;
   state.speechRequestId = requestId;
   stopCurrentSpeech();
+  stopEducatorVideo("Audio only");
+  const voiceText = speechFriendlyText(text);
 
   if (!state.heygenSpeechEnabled) {
-    browserSpeak(text);
+    browserSpeak(voiceText);
     return;
   }
 
@@ -676,7 +853,7 @@ async function playEducatorSpeech(text) {
     const response = await fetch(appUrl("api/heygen-speech"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text })
+      body: JSON.stringify({ text: voiceText })
     });
     const payload = await parseJsonResponse(response);
     if (requestId !== state.speechRequestId) {
@@ -691,9 +868,13 @@ async function playEducatorSpeech(text) {
   } catch (error) {
     console.warn(error);
     if (requestId === state.speechRequestId) {
-      browserSpeak(text);
+      browserSpeak(voiceText);
     }
   }
+}
+
+function speechFriendlyText(text) {
+  return text.replace(/\bNCLEX\b/g, "Enclex");
 }
 
 function appUrl(path) {
@@ -712,6 +893,13 @@ function stopCurrentSpeech() {
   if ("speechSynthesis" in window) {
     window.speechSynthesis.cancel();
   }
+}
+
+function stopEducatorVideo(status = "Video stopped") {
+  if (!welcomeVideo.paused) {
+    welcomeVideo.pause();
+  }
+  setVideoStatus(status);
 }
 
 function browserSpeak(text) {
@@ -742,6 +930,7 @@ function escapeHtml(value) {
 
 checkButton.addEventListener("click", checkAnswer);
 nextButton.addEventListener("click", nextQuestion);
+restartQuizButton.addEventListener("click", restartQuiz);
 shuffleButton.addEventListener("click", shuffleQuestions);
 repeatButton.addEventListener("click", () => {
   const prompt = state.lastPrompt || "I am ready when you are.";

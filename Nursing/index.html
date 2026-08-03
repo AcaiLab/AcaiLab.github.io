@@ -62,7 +62,7 @@
           </div>
         </div>
 
-        <article class="question-card">
+        <article id="question-card" class="question-card">
           <div class="question-meta">
             <span id="difficulty">Foundational</span>
             <span id="format">Single best answer</span>
@@ -72,6 +72,21 @@
         </article>
 
         <div id="feedback" class="feedback" hidden></div>
+
+        <section id="results-panel" class="results-panel" aria-label="Quiz score" hidden>
+          <div class="score-hero">
+            <span>Final score</span>
+            <strong id="score-value">0 / 0</strong>
+            <p id="score-note">Complete the quiz to see your score.</p>
+          </div>
+          <div id="result-summary" class="result-summary"></div>
+          <div class="result-actions">
+            <button type="button" id="restart-quiz-btn" class="primary">
+              <i data-lucide="rotate-ccw"></i>
+              Try again
+            </button>
+          </div>
+        </section>
 
         <div class="voice-answer" id="voice-answer">
           <button type="button" id="mic-btn" class="mic-button" aria-pressed="false" title="Answer by voice" aria-label="Answer by voice">
@@ -83,14 +98,14 @@
           </div>
         </div>
 
-        <div class="actions">
+        <div id="actions" class="actions">
           <button type="button" id="check-btn" class="primary">
             <i data-lucide="check"></i>
             Check answer
           </button>
           <button type="button" id="next-btn" class="secondary">
             <i data-lucide="arrow-right"></i>
-            Next
+            <span id="next-btn-label">Next</span>
           </button>
         </div>
 
