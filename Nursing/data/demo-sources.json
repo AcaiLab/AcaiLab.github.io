@@ -1,0 +1,17 @@
+[
+  {
+    "id": "pearson",
+    "name": "Pearson NCLEX-RN Exam Cram sample pages",
+    "url": "https://ptgmedia.pearsoncmg.com/images/9780789751072/samplepages/0789751070.pdf"
+  },
+  {
+    "id": "simplenursing",
+    "name": "SimpleNursing NCLEX practice review",
+    "url": "https://simplenursing.com/nclex-practice-questions-review/"
+  },
+  {
+    "id": "mometrix",
+    "name": "Mometrix NCLEX-RN practice test",
+    "url": "https://www.mometrix.com/academy/nclex-rn-practice-test/"
+  }
+]
