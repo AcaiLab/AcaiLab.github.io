@@ -1,1 +1,72 @@
-{"title":"NCLEX Buddy","disclaimer":"Practice questions are original NCLEX-style teaching items created for this app. The listed links are study references and are not copied into the question bank.","questions":[{"id":"q001","category":"Prioritization","difficulty":"Foundational","prompt":"Four clients call for assistance at the same time. Which client should the nurse assess first?","options":["A client 2 hours after thyroidectomy who reports tingling around the mouth","A client with pneumonia who needs help repositioning in bed","A client with diabetes who requests a bedtime snack","A client after knee arthroplasty who rates incisional pain as 6 out of 10"],"format":"single","sourceIds":["pearson","mometrix"],"answer":[0],"rationale":"Perioral tingling after thyroidectomy can indicate hypocalcemia from parathyroid injury and may progress to laryngospasm or seizures.","teachingPoint":"Use airway risk and rapid deterioration when several needs compete."},{"id":"q002","category":"Pharmacology","difficulty":"Foundational","prompt":"A client taking digoxin has nausea, blurred yellow vision, and a heart rate of 52 beats/min. What is the nurse's best action?","options":["Hold the digoxin and notify the provider","Give the medication with food","Document expected medication effects","Encourage the client to ambulate before the dose"],"format":"single","sourceIds":["simplenursing","mometrix"],"answer":[0],"rationale":"Bradycardia and visual changes are warning signs of digoxin toxicity.","teachingPoint":"Check pulse and toxicity cues before giving cardiac glycosides."},{"id":"q003","category":"Safety and Infection Control","difficulty":"Foundational","prompt":"Which infection-control action is most appropriate before entering the room of a client with suspected Clostridioides difficile infection?","options":["Wear gloves and gown and plan to wash hands with soap and water after care","Wear a surgical mask and use alcohol hand sanitizer after care","Place the client in a positive-pressure room","Use sterile gloves for all contact with the client"],"format":"single","sourceIds":["pearson","simplenursing"],"answer":[0],"rationale":"Clostridioides difficile infection requires contact precautions, and spores are best removed with soap and water.","teachingPoint":"Match precautions to the organism and transmission route."}]}
+{
+  "title": "NCLEX Buddy",
+  "disclaimer": "Practice questions are original NCLEX-style teaching items created for this app. The listed links are study references and are not copied into the question bank.",
+  "questions": [
+    {
+      "id": "q001",
+      "category": "Prioritization",
+      "difficulty": "Foundational",
+      "prompt": "Four clients call for assistance at the same time. Which client should the nurse assess first?",
+      "options": [
+        "A client 2 hours after thyroidectomy who reports tingling around the mouth",
+        "A client with pneumonia who needs help repositioning in bed",
+        "A client with diabetes who requests a bedtime snack",
+        "A client after knee arthroplasty who rates incisional pain as 6 out of 10"
+      ],
+      "format": "single",
+      "sourceIds": [
+        "pearson",
+        "mometrix"
+      ],
+      "answer": [
+        0
+      ],
+      "rationale": "Perioral tingling after thyroidectomy can indicate hypocalcemia from parathyroid injury and may progress to laryngospasm or seizures.",
+      "teachingPoint": "Use airway risk and rapid deterioration when several needs compete."
+    },
+    {
+      "id": "q002",
+      "category": "Pharmacology",
+      "difficulty": "Foundational",
+      "prompt": "A client taking digoxin has nausea, blurred yellow vision, and a heart rate of 52 beats/min. What is the nurse's best action?",
+      "options": [
+        "Hold the digoxin and notify the provider",
+        "Give the medication with food",
+        "Document expected medication effects",
+        "Encourage the client to ambulate before the dose"
+      ],
+      "format": "single",
+      "sourceIds": [
+        "simplenursing",
+        "mometrix"
+      ],
+      "answer": [
+        0
+      ],
+      "rationale": "Bradycardia and visual changes are warning signs of digoxin toxicity.",
+      "teachingPoint": "Check pulse and toxicity cues before giving cardiac glycosides."
+    },
+    {
+      "id": "q003",
+      "category": "Safety and Infection Control",
+      "difficulty": "Foundational",
+      "prompt": "Which infection-control action is most appropriate before entering the room of a client with suspected Clostridioides difficile infection?",
+      "options": [
+        "Wear gloves and gown and plan to wash hands with soap and water after care",
+        "Wear a surgical mask and use alcohol hand sanitizer after care",
+        "Place the client in a positive-pressure room",
+        "Use sterile gloves for all contact with the client"
+      ],
+      "format": "single",
+      "sourceIds": [
+        "pearson",
+        "simplenursing"
+      ],
+      "answer": [
+        0
+      ],
+      "rationale": "Clostridioides difficile infection requires contact precautions, and spores are best removed with soap and water.",
+      "teachingPoint": "Match precautions to the organism and transmission route."
+    }
+  ]
+}
