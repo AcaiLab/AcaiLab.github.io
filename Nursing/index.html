@@ -3,22 +3,22 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>NCLEX Buddy</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Nursing IQ</title>
+    <link rel="stylesheet" href="styles.css?v=incorrect-video-fit">
   </head>
   <body>
     <main class="shell">
       <section class="avatar-panel" aria-label="Nursing educator avatar">
         <div class="topbar">
           <div>
-            <p class="eyebrow">NCLEX Buddy</p>
+            <p class="eyebrow">Nursing IQ</p>
             <h1>Clinical judgment practice</h1>
           </div>
           <div class="avatar-tools">
             <div class="status" id="video-status">Video loading</div>
             <button type="button" id="replay-welcome-btn" class="video-tool">
               <i data-lucide="rotate-ccw"></i>
-              Replay welcome
+              Replay intro
             </button>
           </div>
         </div>
@@ -33,7 +33,7 @@
           <video
             id="welcome-video"
             class="welcome-video"
-            src="videos/welcome-nclex-buddy.mp4"
+            src="videos/six-question-prototype/instructions.mp4"
             autoplay
             playsinline
             preload="auto"
@@ -43,13 +43,15 @@
             <span>Export the HeyGen clip as <code>static/videos/welcome-nclex-buddy.mp4</code>.</span>
           </div>
         </div>
-        <div class="educator-line" id="educator-line">Welcome to NCLEX Buddy.</div>
+        <div class="educator-line" id="educator-line">
+          Welcome to Nursing IQ. Preparing for the NCLEX requires more than remembering nursing content. Success also requires applying what you know to patient-care situations, making clinical decisions, and determining the most appropriate response. Nursing IQ is designed to help you strengthen these skills. Nursing IQ is an AI-enhanced NCLEX preparation and clinical judgment learning platform that goes beyond simply telling you whether an answer is right or wrong. As you work through NCLEX-style questions and clinical scenarios, Nursing IQ helps you better understand what you know, how you approach clinical decisions, where your reasoning may need additional development, and what you can do to improve.
+        </div>
       </section>
 
       <section class="practice-panel" aria-label="Practice questions">
         <div class="controls-row">
           <div>
-            <span id="progress">Question 1 of 3</span>
+            <span id="progress">Question 1 of 6</span>
             <strong id="category">Prioritization</strong>
           </div>
           <div class="mode-toggle" role="group" aria-label="Question navigation">
@@ -69,6 +71,14 @@
           </div>
           <h2 id="prompt">Loading question...</h2>
           <div id="options" class="options"></div>
+          <fieldset id="thinking-panel" class="thinking-panel" hidden>
+            <legend id="thinking-prompt">Show Me Your Thinking</legend>
+            <div id="thinking-options" class="thinking-options"></div>
+          </fieldset>
+          <fieldset class="confidence-rating">
+            <legend>Confidence</legend>
+            <div id="confidence-options" class="confidence-options"></div>
+          </fieldset>
         </article>
 
         <div id="feedback" class="feedback" hidden></div>
@@ -117,6 +127,6 @@
     </main>
 
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script type="module" src="app.js?v=github-pages-demo"></script>
+    <script type="module" src="app.js?v=incorrect-video-fit"></script>
   </body>
 </html>
