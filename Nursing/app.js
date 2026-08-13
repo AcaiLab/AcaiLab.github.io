@@ -1,11 +1,32 @@
 const welcomeVideo = document.getElementById("welcome-video");
 const WELCOME_VIDEO_SRC = appUrl("videos/welcome-nclex-buddy.mp4");
+const WELCOME_INTRO_TEXT =
+  "Welcome to Nursing IQ. Preparing for the NCLEX requires more than remembering nursing content. Success also requires applying what you know to patient-care situations, making clinical decisions, and determining the most appropriate response. Nursing IQ is designed to help you strengthen these skills. Nursing IQ is an AI-enhanced NCLEX preparation and clinical judgment learning platform that goes beyond simply telling you whether an answer is right or wrong. As you work through NCLEX-style questions and clinical scenarios, Nursing IQ helps you better understand what you know, how you approach clinical decisions, where your reasoning may need additional development, and what you can do to improve.";
 const SCORE_VIDEO_SRC = appUrl("videos/score-summary.mp4");
 const SCORE_SUMMARY_TEXT =
   "Here is your score. Take a moment to review, then keep practicing. Each question helps sharpen your clinical judgment.";
 const VOICE_NO_MATCH_VIDEO_SRC = appUrl("videos/voice-no-match.mp4");
 const VOICE_NO_MATCH_TEXT =
   "I heard your response, but I could not match it to an answer option. Try saying option A, B, C, or D.";
+const CONFIDENCE_REQUIRED_VIDEO_SRC = appUrl("videos/confidence-required.mp4");
+const CONFIDENCE_REQUIRED_TEXT = "Choose your confidence level, then I will check your answer.";
+const CONFIDENCE_OPTIONS = [
+  {
+    value: "not",
+    label: "Not confident",
+    detail: "I am mostly unsure or guessing."
+  },
+  {
+    value: "somewhat",
+    label: "Somewhat confident",
+    detail: "I think I am correct but have some uncertainty."
+  },
+  {
+    value: "very",
+    label: "Very confident",
+    detail: "I believe I am correct and could explain why."
+  }
+];
 const liveAvatarFrame = document.getElementById("liveavatar-frame");
 const videoStatus = document.getElementById("video-status");
 const videoMissing = document.getElementById("video-missing");
@@ -18,6 +39,10 @@ const difficultyNode = document.getElementById("difficulty");
 const formatNode = document.getElementById("format");
 const promptNode = document.getElementById("prompt");
 const optionsNode = document.getElementById("options");
+const thinkingPanel = document.getElementById("thinking-panel");
+const thinkingPromptNode = document.getElementById("thinking-prompt");
+const thinkingOptionsNode = document.getElementById("thinking-options");
+const confidenceOptionsNode = document.getElementById("confidence-options");
 const feedbackNode = document.getElementById("feedback");
 const resultsPanel = document.getElementById("results-panel");
 const scoreValue = document.getElementById("score-value");
@@ -40,7 +65,7 @@ const state = {
   questions: [],
   sources: {},
   index: 0,
-  lastPrompt: "Welcome to NCLEX Buddy.",
+  lastPrompt: WELCOME_INTRO_TEXT,
   checked: false,
   responses: {},
   showingResults: false,
@@ -54,8 +79,11 @@ const state = {
   speechAudio: null,
   speechRequestId: 0,
   videoManifest: {},
+  instructionsVideoSrc: "",
+  instructionsText: WELCOME_INTRO_TEXT,
   lastVideoSrc: "",
-  currentVideoSrc: WELCOME_VIDEO_SRC,
+  currentVideoSrc: "",
+  questionStartedAt: 0,
 };
 
 function setVideoStatus(message) {
@@ -64,11 +92,11 @@ function setVideoStatus(message) {
 
 async function init() {
   lucide.createIcons();
-  setupWelcomeVideo();
   setupSpeechRecognition();
   await loadConfig();
   await Promise.all([loadQuestions(), loadSources(), loadVideoManifest()]);
   renderSources();
+  setupWelcomeVideo();
   renderQuestion({ announce: false });
 }
 
@@ -87,6 +115,7 @@ async function loadConfig() {
 async function loadQuestions() {
   const data = await fetchJson(state.staticMode ? "data/demo-questions.json" : "api/questions");
   state.questions = data.questions;
+  state.instructionsText = instructionsToText(data.instructions) || WELCOME_INTRO_TEXT;
 }
 
 async function loadSources() {
@@ -95,6 +124,13 @@ async function loadSources() {
 }
 
 async function loadVideoManifest() {
+  const prototypeManifest = await loadOptionalJson("videos/six-question-prototype/manifest.json");
+  if (prototypeManifest) {
+    state.videoManifest = prototypeManifest.questions || {};
+    state.instructionsVideoSrc = prototypeManifest.instructions || "";
+    return;
+  }
+
   try {
     const response = await fetch(appUrl("videos/quiz/manifest.json"), { cache: "no-store" });
     if (!response.ok) {
@@ -128,6 +164,10 @@ async function fetchJson(path, options = {}) {
 }
 
 function setupWelcomeVideo() {
+  state.lastPrompt = state.instructionsText;
+  state.lastVideoSrc = introVideoSrc();
+  educatorLine.textContent = state.instructionsText;
+  setEducatorVideoSrc(introVideoSrc());
   checkWelcomeVideoFile();
 
   welcomeVideo.addEventListener("loadeddata", () => {
@@ -141,7 +181,7 @@ function setupWelcomeVideo() {
   });
 
   welcomeVideo.addEventListener("ended", () => {
-    setVideoStatus("Welcome played");
+    setVideoStatus("Intro played");
   });
 
   welcomeVideo.addEventListener("error", () => {
@@ -186,11 +226,11 @@ async function autoplayWelcomeVideo() {
     try {
       welcomeVideo.muted = true;
       await welcomeVideo.play();
-      educatorLine.textContent = "Welcome video is autoplaying muted. Use Replay welcome for sound.";
+      educatorLine.textContent = "Intro video is autoplaying muted. Use Replay intro for sound.";
     } catch (mutedError) {
       if (state.welcomeVideoAvailable) {
         setVideoStatus("Tap replay");
-        educatorLine.textContent = "Use Replay welcome to start the educator video.";
+        educatorLine.textContent = "Use Replay intro to start the educator video.";
       }
     }
   }
@@ -203,7 +243,11 @@ async function replayWelcomeVideo() {
     setVideoStatus("Video missing");
     return;
   }
-  setEducatorVideoSrc(WELCOME_VIDEO_SRC);
+  const videoSrc = introVideoSrc();
+  state.lastPrompt = state.instructionsText;
+  state.lastVideoSrc = videoSrc;
+  educatorLine.textContent = state.instructionsText;
+  setEducatorVideoSrc(videoSrc);
   welcomeVideo.currentTime = 0;
   welcomeVideo.muted = false;
   await welcomeVideo.play();
@@ -234,7 +278,12 @@ function hideLiveAvatar() {
 
 function renderSources() {
   sourcesNode.innerHTML = "";
-  Object.values(state.sources).forEach((source) => {
+  const sources = Object.values(state.sources);
+  const sourcesSection = sourcesNode.closest(".sources");
+  if (sourcesSection) {
+    sourcesSection.hidden = sources.length === 0;
+  }
+  sources.forEach((source) => {
     const item = document.createElement("li");
     const link = document.createElement("a");
     link.href = source.url;
@@ -246,8 +295,20 @@ function renderSources() {
   });
 }
 
+function instructionsToText(instructions) {
+  if (!instructions || !Array.isArray(instructions.body)) {
+    return "";
+  }
+  return instructions.body.join(" ");
+}
+
+function introVideoSrc() {
+  return state.instructionsVideoSrc || WELCOME_VIDEO_SRC;
+}
+
 function renderQuestion({ announce = true } = {}) {
   const question = currentQuestion();
+  state.questionStartedAt = performance.now();
   state.showingResults = false;
   state.checked = false;
   questionCard.hidden = false;
@@ -267,6 +328,8 @@ function renderQuestion({ announce = true } = {}) {
   formatNode.textContent = question.format === "multiple" ? "Select all that apply" : "Single best answer";
   promptNode.textContent = question.prompt;
   optionsNode.innerHTML = "";
+  thinkingOptionsNode.innerHTML = "";
+  confidenceOptionsNode.innerHTML = "";
 
   question.options.forEach((option, optionIndex) => {
     const id = `${question.id}-${optionIndex}`;
@@ -291,6 +354,39 @@ function renderQuestion({ announce = true } = {}) {
     optionsNode.append(label);
   });
 
+  renderThinkingOptions(question);
+
+  CONFIDENCE_OPTIONS.forEach((confidence) => {
+    const id = `${question.id}-confidence-${confidence.value}`;
+    const label = document.createElement("label");
+    label.className = "confidence-option";
+    label.setAttribute("for", id);
+
+    const input = document.createElement("input");
+    input.id = id;
+    input.name = `${question.id}-confidence`;
+    input.type = "radio";
+    input.value = confidence.value;
+    input.addEventListener("change", () => {
+      if (!state.checked) {
+        feedbackNode.hidden = true;
+      }
+    });
+
+    const text = document.createElement("span");
+    text.className = "confidence-copy";
+
+    const title = document.createElement("strong");
+    title.textContent = confidence.label;
+
+    const detail = document.createElement("span");
+    detail.textContent = confidence.detail;
+
+    text.append(title, detail);
+    label.append(input, text);
+    confidenceOptionsNode.append(label);
+  });
+
   const intro = question.format === "multiple" ? "Select all that apply. " : "";
   const spokenPrompt = `Here is your ${question.category} question. ${intro}${question.prompt}`;
   if (announce) {
@@ -301,12 +397,62 @@ function renderQuestion({ announce = true } = {}) {
   }
 }
 
+function renderThinkingOptions(question) {
+  const options = question.thinkingOptions || [];
+  if (!question.thinkingPrompt || !options.length) {
+    thinkingPanel.hidden = true;
+    return;
+  }
+
+  thinkingPanel.hidden = false;
+  thinkingPromptNode.textContent = question.thinkingPrompt;
+  options.forEach((option, optionIndex) => {
+    const id = `${question.id}-thinking-${optionIndex}`;
+    const label = document.createElement("label");
+    label.className = "thinking-option";
+    label.setAttribute("for", id);
+
+    const input = document.createElement("input");
+    input.id = id;
+    input.name = `${question.id}-thinking`;
+    input.type = "radio";
+    input.value = String(optionIndex);
+    input.addEventListener("change", () => {
+      if (!state.checked) {
+        feedbackNode.hidden = true;
+      }
+    });
+
+    const text = document.createElement("span");
+    text.textContent = option;
+    label.append(input, text);
+    thinkingOptionsNode.append(label);
+  });
+}
+
 function currentQuestion() {
   return state.questions[state.index];
 }
 
 function selectedIndexes() {
   return Array.from(optionsNode.querySelectorAll("input:checked")).map((input) => Number(input.value));
+}
+
+function selectedThinking(question) {
+  const input = thinkingOptionsNode.querySelector("input:checked");
+  if (!input) {
+    return null;
+  }
+  const index = Number(input.value);
+  return {
+    index,
+    label: question.thinkingOptions?.[index] || ""
+  };
+}
+
+function selectedConfidence() {
+  const input = confidenceOptionsNode.querySelector("input:checked");
+  return input ? input.value : "";
 }
 
 async function checkAnswer() {
@@ -320,50 +466,144 @@ async function checkAnswer() {
     speak("Choose an answer first, then I will coach your reasoning.");
     return;
   }
+  const thinking = selectedThinking(question);
+  if (question.thinkingPrompt && !thinking) {
+    speak("Choose what most influenced your decision, then I will check your answer.");
+    return;
+  }
+  const confidence = selectedConfidence();
+  if (!confidence) {
+    playConfidenceRequiredPrompt();
+    return;
+  }
+  const responseTimeMs = Math.max(0, Math.round(performance.now() - state.questionStartedAt));
 
   const result = state.staticMode
     ? checkStaticAnswer(question, selected)
     : await fetchJson("api/answer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionId: question.id, selected })
+        body: JSON.stringify({ questionId: question.id, selected, thinking, confidence, responseTimeMs })
       });
   state.checked = true;
   state.responses[question.id] = {
     correct: Boolean(result.correct),
+    status: result.status || (result.correct ? "correct" : "incorrect"),
+    partial: Boolean(result.partial),
     selected,
     answer: result.answer,
+    selectedCorrect: result.selectedCorrect || [],
+    missed: result.missed || [],
+    incorrectlySelected: result.incorrectlySelected || [],
     category: question.category,
-    prompt: question.prompt
+    prompt: question.prompt,
+    confidence,
+    thinking,
+    responseTimeMs
   };
   checkButton.disabled = true;
   nextButton.disabled = false;
   markOptions(result, selected);
   feedbackNode.hidden = false;
-  feedbackNode.classList.toggle("is-wrong", !result.correct);
-  feedbackNode.innerHTML = `
-    <strong>${result.correct ? "Correct." : "Not quite."}</strong>
-    <p>${escapeHtml(result.rationale)}</p>
-    <p>${escapeHtml(result.teachingPoint)}</p>
-  `;
-  speakFeedback(
-    question,
-    selected,
-    `${result.correct ? "Correct." : "Not quite."} ${result.rationale} Teaching point: ${result.teachingPoint}`
-  );
+  renderFeedback(question, result);
+  speakFeedback(question, selected, feedbackSpeechText(result), result);
 }
 
 function checkStaticAnswer(question, selected) {
   const correct = [...question.answer].sort((a, b) => a - b);
-  const chosen = [...selected].sort((a, b) => a - b);
+  const chosen = [...new Set(selected)].sort((a, b) => a - b);
+  const correctSet = new Set(correct);
+  const chosenSet = new Set(chosen);
+  const selectedCorrect = correct.filter((index) => chosenSet.has(index));
+  const missed = correct.filter((index) => !chosenSet.has(index));
+  const incorrectlySelected = chosen.filter((index) => !correctSet.has(index));
+  const isCorrect = chosen.length === correct.length && chosen.every((value, index) => value === correct[index]);
+  const isPartial = question.format === "multiple" && !isCorrect && selectedCorrect.length > 0;
+  const status = isCorrect ? "correct" : isPartial ? "partial" : "incorrect";
   return {
     questionId: question.id,
-    correct: chosen.length === correct.length && chosen.every((value, index) => value === correct[index]),
+    status,
+    correct: isCorrect,
+    partial: isPartial,
     answer: correct,
-    rationale: question.rationale,
-    teachingPoint: question.teachingPoint,
+    selected: chosen,
+    selectedCorrect,
+    missed,
+    incorrectlySelected,
+    feedback: question.feedback?.[status] || {
+      heading: isCorrect ? "Correct." : "Not quite.",
+      body: [question.rationale || ""],
+      sections: [{ title: "Teaching Point", body: question.teachingPoint || "" }]
+    },
+    rationale: question.rationale || "",
+    teachingPoint: question.teachingPoint || "",
     sourceIds: question.sourceIds
   };
+}
+
+function renderFeedback(question, result) {
+  const status = result.status || (result.correct ? "correct" : "incorrect");
+  const feedback = result.feedback || {};
+  feedbackNode.className = `feedback is-${status}`;
+  feedbackNode.innerHTML = "";
+
+  const heading = document.createElement("strong");
+  heading.textContent = feedback.heading || (result.correct ? "Correct." : status === "partial" ? "Partially correct." : "Not quite.");
+  feedbackNode.append(heading);
+
+  (feedback.body || []).forEach((paragraph) => {
+    if (!paragraph) {
+      return;
+    }
+    const node = document.createElement("p");
+    node.textContent = paragraph;
+    feedbackNode.append(node);
+  });
+
+  if (question.format === "multiple") {
+    feedbackNode.append(selectAllBreakdown(question, result));
+  }
+
+  (feedback.sections || []).forEach((section) => {
+    const block = document.createElement("section");
+    block.className = "feedback-section";
+    const title = document.createElement("h3");
+    title.textContent = section.title;
+    const body = document.createElement("p");
+    body.textContent = section.body;
+    block.append(title, body);
+    feedbackNode.append(block);
+  });
+}
+
+function selectAllBreakdown(question, result) {
+  const block = document.createElement("section");
+  block.className = "feedback-section select-all-breakdown";
+
+  const title = document.createElement("h3");
+  title.textContent = "Nursing IQ Highlights";
+  block.append(title);
+
+  [
+    ["Correctly recognized", result.selectedCorrect || []],
+    ["Missed", result.missed || []],
+    ["Incorrectly selected", result.incorrectlySelected || []]
+  ].forEach(([label, indexes]) => {
+    const item = document.createElement("p");
+    item.textContent = `${label}: ${formatAnswer(indexes, question) || "None"}`;
+    block.append(item);
+  });
+
+  return block;
+}
+
+function feedbackSpeechText(result) {
+  const feedback = result.feedback || {};
+  const parts = [feedback.heading, ...(feedback.body || [])];
+  (feedback.sections || []).forEach((section) => {
+    parts.push(`${section.title}: ${section.body}`);
+  });
+  return parts.filter(Boolean).join(" ");
 }
 
 function markOptions(result, selected) {
@@ -372,6 +612,12 @@ function markOptions(result, selected) {
     label.classList.toggle("correct", correct.has(index));
     label.classList.toggle("incorrect", selected.includes(index) && !correct.has(index));
     label.querySelector("input").disabled = true;
+  });
+  confidenceOptionsNode.querySelectorAll("input").forEach((input) => {
+    input.disabled = true;
+  });
+  thinkingOptionsNode.querySelectorAll("input").forEach((input) => {
+    input.disabled = true;
   });
 }
 
@@ -408,9 +654,17 @@ function showResults() {
 
   const total = state.questions.length;
   const correct = state.questions.filter((question) => state.responses[question.id]?.correct).length;
+  const partial = state.questions.filter((question) => state.responses[question.id]?.status === "partial").length;
+  const totalResponseTimeMs = state.questions.reduce(
+    (sum, question) => sum + (state.responses[question.id]?.responseTimeMs || 0),
+    0
+  );
+  const averageResponseTimeMs = total ? Math.round(totalResponseTimeMs / total) : 0;
   const percent = total ? Math.round((correct / total) * 100) : 0;
   const note = scoreMessage(correct, total);
 
+  stopCurrentSpeech();
+  stopEducatorVideo("Score report");
   progressNode.textContent = "Quiz complete";
   categoryNode.textContent = "Score report";
   questionCard.hidden = true;
@@ -419,7 +673,7 @@ function showResults() {
   actionsNode.hidden = true;
   resultsPanel.hidden = false;
   scoreValue.textContent = `${correct} / ${total}`;
-  scoreNote.textContent = `${percent}% correct. ${note}`;
+  scoreNote.textContent = `${percent}% correct. ${partial} partially correct. Average response time: ${formatDuration(averageResponseTimeMs)}. ${note}`;
   renderResultSummary();
   playScoreSummary();
 }
@@ -448,6 +702,18 @@ async function playVoiceNoMatchPrompt() {
   playEducatorSpeech(VOICE_NO_MATCH_TEXT);
 }
 
+async function playConfidenceRequiredPrompt() {
+  state.lastPrompt = CONFIDENCE_REQUIRED_TEXT;
+  educatorLine.textContent = CONFIDENCE_REQUIRED_TEXT;
+  if (await videoExists(CONFIDENCE_REQUIRED_VIDEO_SRC)) {
+    state.lastVideoSrc = CONFIDENCE_REQUIRED_VIDEO_SRC;
+    playEducatorVideo(CONFIDENCE_REQUIRED_VIDEO_SRC, CONFIDENCE_REQUIRED_TEXT);
+    return;
+  }
+  state.lastVideoSrc = "";
+  playEducatorSpeech(CONFIDENCE_REQUIRED_TEXT);
+}
+
 function scoreMessage(correct, total) {
   if (!total) {
     return "No questions were loaded for this session.";
@@ -466,14 +732,19 @@ function renderResultSummary() {
   state.questions.forEach((question, index) => {
     const response = state.responses[question.id] || {
       correct: false,
+      status: "incorrect",
       selected: [],
-      answer: question.answer || []
+      answer: question.answer || [],
+      confidence: "",
+      thinking: null,
+      responseTimeMs: 0
     };
+    const status = response.status || (response.correct ? "correct" : "incorrect");
     const item = document.createElement("div");
-    item.className = `result-item ${response.correct ? "correct" : "incorrect"}`;
+    item.className = `result-item ${status}`;
 
     const heading = document.createElement("strong");
-    heading.textContent = `Question ${index + 1}: ${response.correct ? "Correct" : "Review"}`;
+    heading.textContent = `Question ${index + 1}: ${formatStatus(status)}`;
 
     const category = document.createElement("span");
     category.textContent = question.category;
@@ -488,9 +759,59 @@ function renderResultSummary() {
     const answer = document.createElement("span");
     answer.textContent = `Correct answer: ${formatAnswer(response.answer, question)}`;
 
-    item.append(heading, category, prompt, selected, answer);
+    const confidence = document.createElement("span");
+    confidence.textContent = `Confidence: ${formatConfidence(response.confidence)}`;
+
+    const thinking = document.createElement("span");
+    thinking.textContent = `Thinking choice: ${response.thinking?.label || "Not recorded"}`;
+
+    const responseTime = document.createElement("span");
+    responseTime.textContent = `Response time: ${formatDuration(response.responseTimeMs)}`;
+
+    item.append(heading, category, prompt, selected, answer, confidence, thinking, responseTime);
+
+    if (question.format === "multiple" && status !== "correct") {
+      const details = document.createElement("div");
+      details.className = "result-breakdown";
+      [
+        ["Correctly selected", response.selectedCorrect || []],
+        ["Missed", response.missed || []],
+        ["Incorrectly selected", response.incorrectlySelected || []]
+      ].forEach(([label, indexes]) => {
+        const line = document.createElement("span");
+        line.textContent = `${label}: ${formatAnswer(indexes, question) || "None"}`;
+        details.append(line);
+      });
+      item.append(details);
+    }
+
     resultSummary.append(item);
   });
+}
+
+function formatStatus(status) {
+  if (status === "correct") {
+    return "Correct";
+  }
+  if (status === "partial") {
+    return "Partially correct";
+  }
+  return "Review";
+}
+
+function formatConfidence(value) {
+  const confidence = CONFIDENCE_OPTIONS.find((option) => option.value === value);
+  return confidence ? `${confidence.label}: ${confidence.detail}` : "Not rated";
+}
+
+function formatDuration(ms) {
+  const totalSeconds = Math.max(0, Math.round((ms || 0) / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes) {
+    return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
+  }
+  return `${seconds}s`;
 }
 
 function formatAnswer(indexes, question) {
@@ -797,10 +1118,16 @@ function speakQuestion(question, text) {
   playEducatorSpeech(text);
 }
 
-function speakFeedback(question, selected, text) {
+function speakFeedback(question, selected, text, result = {}) {
   state.lastPrompt = text;
   state.lastVideoSrc = "";
   educatorLine.textContent = text;
+  const statusVideoSrc = state.videoManifest[question.id]?.feedback?.[result.status];
+  if (statusVideoSrc) {
+    state.lastVideoSrc = statusVideoSrc;
+    playEducatorVideo(statusVideoSrc, text);
+    return;
+  }
   const answerIndex = selected.length === 1 ? selected[0] : null;
   const answerKey = answerIndex === null ? "" : String.fromCharCode(97 + answerIndex);
   const videoSrc = state.videoManifest[question.id]?.answers?.[answerKey];

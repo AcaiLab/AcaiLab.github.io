@@ -1,0 +1,52 @@
+{
+  "questions": {
+    "q001": {
+      "feedback": {
+        "correct": "/videos/six-question-prototype/q001-feedback-correct.mp4",
+        "partial": "/videos/six-question-prototype/q001-feedback-partial.mp4",
+        "incorrect": "/videos/six-question-prototype/q001-feedback-incorrect.mp4?v=reframed-incorrect"
+      },
+      "question": "/videos/six-question-prototype/q001-question.mp4"
+    },
+    "q002": {
+      "feedback": {
+        "correct": "/videos/six-question-prototype/q002-feedback-correct.mp4",
+        "incorrect": "/videos/six-question-prototype/q002-feedback-incorrect.mp4?v=reframed-incorrect"
+      },
+      "question": "/videos/six-question-prototype/q002-question.mp4"
+    },
+    "q003": {
+      "feedback": {
+        "correct": "/videos/six-question-prototype/q003-feedback-correct.mp4",
+        "incorrect": "/videos/six-question-prototype/q003-feedback-incorrect.mp4?v=reframed-incorrect"
+      },
+      "question": "/videos/six-question-prototype/q003-question.mp4"
+    },
+    "q004": {
+      "feedback": {
+        "correct": "/videos/six-question-prototype/q004-feedback-correct.mp4",
+        "partial": "/videos/six-question-prototype/q004-feedback-partial.mp4",
+        "incorrect": "/videos/six-question-prototype/q004-feedback-incorrect.mp4?v=reframed-incorrect"
+      },
+      "question": "/videos/six-question-prototype/q004-question.mp4"
+    },
+    "q005": {
+      "feedback": {
+        "correct": "/videos/six-question-prototype/q005-feedback-correct.mp4",
+        "incorrect": "/videos/six-question-prototype/q005-feedback-incorrect.mp4?v=reframed-incorrect"
+      },
+      "question": "/videos/six-question-prototype/q005-question.mp4"
+    },
+    "q006": {
+      "feedback": {
+        "correct": "/videos/six-question-prototype/q006-feedback-correct.mp4",
+        "incorrect": "/videos/six-question-prototype/q006-feedback-incorrect.mp4?v=reframed-incorrect"
+      },
+      "question": "/videos/six-question-prototype/q006-question.mp4"
+    }
+  },
+  "generatedAt": "2026-08-13T17:35:30Z",
+  "avatarId": "d0beed5a60ee4047b415d3f4b11d9663",
+  "voiceId": "KxNspP3piesWGdsqfNBS",
+  "instructions": "/videos/six-question-prototype/instructions.mp4"
+}
